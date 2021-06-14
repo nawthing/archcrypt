@@ -1,5 +1,6 @@
 #!/bin/bash
 
+clear
 read -p "Enter Hostname : " HOSTNAME 
 read -p "Enter Username: " USERNAME
 read -p "Swapfile size (eg: 2,4,8) : " SWPFILE

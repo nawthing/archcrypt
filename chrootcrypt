@@ -1,0 +1,64 @@
+#!/bin/bash
+
+read -p "Enter Hostname : " HOSTNAME 
+read -p "Enter Username: " USERNAME
+read -p "Swapfile size (eg: 2,4,8) : " SWPFILE
+
+
+/bin/echo -e '\n\n' "\e[1;32mCreating Swapfile...
+
+\e[0m"
+fallocate -l ${SWPFILE}g /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo  "/swapfile	none	swap	defaults	0 0" >> /etc/fstab
+
+ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
+echo en_US ISO-8859-1 >> /etc/locale.gen
+locale-gen
+echo LANG=en_US.UTF-8 >> /etc/locale.conf 
+echo $HOSTNAME >> /etc/hostname
+/bin/echo -e '\n\n' "\e[1;33mEnter root password
+
+\e[0m"
+passwd 
+pacman -Sy grub efibootmgr networkmanager terminus-font zsh zsh-syntax-highlighting zsh-autosuggestions --needed --noconfirm
+echo "FONT=ter-g18b" >> /etc/vconsole.conf
+echo "FONT_MAP=8859-2" >> /etc/vconsole.conf
+sed -i 's/base udev autodetect modconf block filesystems keyboard fsck/base udev autodetect modconf block keyboard keymap consolefont encrypt fsck filesystems/g' /etc/mkinitcpio.conf
+mkinitcpio -p linux
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+grub-mkconfig -o /boot/grub/grub.cfg 
+
+
+clear && /bin/echo -e '\n\n' "\e[1;32mEnter your encrypted partition...
+\e[0m"
+lsblk
+read -p "Encrypted partition (eg: sda2,vda2,nvme02) : " ECRVLM
+LUKS_UUID=$(blkid -o value -s UUID /dev/$ECRVLM)
+echo $LUKS_UUID
+sed -i 's|GRUB_CMDLINE_LINUX=""|GRUB_CMDLINE_LINUX="cryptdevice=UUID='$LUKS_UUID':cryptroot\ root=/dev/mapper/cryptroot"|g' /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg 
+systemctl enable NetworkManager 
+useradd -mG wheel -s /bin/zsh $USERNAME
+/bin/echo -e '\n\n' "\e[1;33mEnter user password
+
+\e[0m"
+passwd $USERNAME
+echo "root ALL=(ALL) ALL 
+%wheel ALL=(ALL) ALL 
+@includedir /etc/sudoers.d" > /etc/sudoers
+exit
+
+
+
+
+
+
+
+
+
+
+

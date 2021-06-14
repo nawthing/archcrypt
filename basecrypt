@@ -1,0 +1,85 @@
+#!/bin/bash
+
+PART_INT() {
+ping -c 1 nsa.gov
+read -p "Drive Encryption password : " ENCRPYTION_PASS
+lsblk
+read -p "Drive Name (eg: sda,vda,nvme0) : " DRIVE
+cfdisk /dev/$DRIVE
+lsblk /dev/$DRIVE && read -p "EFI partition (eg: sda1,vda1,nvme01) : " DISK_EFI
+read -p "Root partition (eg: sda2,vda2,nvme02) : " DISK_ROOT
+}
+
+ENC_MAIN(){
+clear && /bin/echo -e '\n\n' "\e[1;32mEncrypting Drive...\e[0m"
+sleep 1
+/bin/echo -e '\n\n' "\e[1;32mRewriting the drive with random data\e[0m"
+sleep 1
+/bin/echo -e '\n\n' "\e[1;32mIgnore the errors, Do not panic if it looks stuck!
+\e[0m"
+echo -n "$ENCRPYTION_PASS" | cryptsetup -y -v luksFormat /dev/$DISK_ROOT
+echo -n "$ENCRPYTION_PASS" | cryptsetup open /dev/$DISK_ROOT cryptroot 
+mkfs.fat -F32 /dev/$DISK_EFI
+mkfs.ext4 /dev/mapper/cryptroot
+mount /dev/mapper/cryptroot /mnt
+mkdir /mnt/boot
+mount /dev/$DISK_EFI /mnt/boot
+}
+
+SYS_GRD(){
+model=$(lscpu | grep 'Model name')
+
+case "$model" in
+    *Intel*) CPUUCODE="intel-ucode" ;;
+    *AMD*) CPUUCODE="amd-ucode";;	
+esac
+
+printf "
+$CPUUCODE
+"
+
+pacstrap /mnt base base-devel linux linux-firmware vim git $CPUUCODE
+genfstab -U /mnt >> /mnt/etc/fstab 
+}
+
+
+CHR_CRY(){
+cp chrootcrypt /mnt/chrootcrypt 
+chmod +x /mnt/chrootcrypt 
+arch-chroot /mnt bash chrootcrypt && rm /mnt/chrootcrypt
+}
+
+
+CLOSG(){
+umount -R /mnt
+clear && /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..3\e[0m"
+sleep 1
+/bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..2\e[0m"
+sleep 1
+/bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..1\e[0m"
+sleep 1
+/bin/echo -e '\n\n' "\e[1;31mREBOOTING NOW......\e[0m"
+reboot
+
+}
+
+
+
+
+#starting point
+PART_INT
+ENC_MAIN
+SYS_GRD
+CHR_CRY
+CLOSG
+
+
+
+
+
+
+
+
+
+
+

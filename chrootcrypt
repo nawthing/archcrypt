@@ -1,15 +1,24 @@
 #!/bin/bash
 
 clear
+/bin/echo -e '\n\n' "\e[1;36mRUNNING IN CHROOT ENVIRONMENT...
+
+\e[0m"
 read -p "Enter Hostname : " HOSTNAME 
+echo "
+
+"
 read -p "Enter Username: " USERNAME
+echo "
+
+"
 read -p "Swapfile size (eg: 2,4,8) : " SWPFILE
 
 
-/bin/echo -e '\n\n' "\e[1;32mCreating Swapfile...
+/bin/echo -e '\n\n' "\e[1;32mCREATING SWAPFILE...
 
 \e[0m"
-fallocate -l ${SWPFILE}g /swapfile
+dd if=/dev/zero of=/swapfile bs=1G count=${SWPFILE} status=progress
 chmod 600 /swapfile
 mkswap /swapfile
 swapon /swapfile
@@ -34,10 +43,13 @@ grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg 
 
 
-clear && /bin/echo -e '\n\n' "\e[1;32mEnter your encrypted partition...
+clear && /bin/echo -e '\n\n' "\e[1;32mRE-ENTER THE FOLLOWING PARTITION FOR CHROOT ENVIRONMENT!...
 \e[0m"
 lsblk
-read -p "Encrypted partition (eg: sda2,vda2,nvme02) : " ECRVLM
+echo "
+
+"
+read -p "RE-Enter Encrypted partition (eg: sda2,vda2,nvme02) : " ECRVLM
 LUKS_UUID=$(blkid -o value -s UUID /dev/$ECRVLM)
 echo $LUKS_UUID
 sed -i 's|GRUB_CMDLINE_LINUX=""|GRUB_CMDLINE_LINUX="cryptdevice=UUID='$LUKS_UUID':cryptroot\ root=/dev/mapper/cryptroot"|g' /etc/default/grub

@@ -2,11 +2,31 @@
 
 PART_INT() {
 ping -c 1 nsa.gov
-read -p "Drive Encryption password : " ENCRPYTION_PASS
+/bin/echo -e '\n\n' "\e[1;36mSTARTING SCRIPT...
+\e[0m"
+sleep 2
+clear
+/bin/echo -e '\n\n' "\e[1;36mENTER THE FOLLOWING PARAMETERS...
+
+\e[0m"
+read -p "Enter Drive Encryption password : " ENCRPYTION_PASS
+echo "
+
+"
 lsblk
-read -p "Drive Name (eg: sda,vda,nvme0) : " DRIVE
+echo "
+
+"
+read -p "Enter Drive Name (eg: sda,vda,nvme0) : " DRIVE
 cfdisk /dev/$DRIVE
-lsblk /dev/$DRIVE && read -p "EFI partition (eg: sda1,vda1,nvme01) : " DISK_EFI
+lsblk /dev/$DRIVE 
+echo "
+
+"
+read -p "EFI partition (eg: sda1,vda1,nvme01) : " DISK_EFI
+echo "
+
+"
 read -p "Root partition (eg: sda2,vda2,nvme02) : " DISK_ROOT
 }
 
@@ -52,13 +72,18 @@ arch-chroot /mnt bash chrootcrypt && rm /mnt/chrootcrypt
 
 CLOSG(){
 umount -R /mnt
-clear && /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..3\e[0m"
+clear 
+/bin/echo -e '\n\n' "\e[1;32mINSTALLATION COMPLETED!...\e[0m"
+sleep 1
+/bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..3\e[0m"
 sleep 1
 /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..2\e[0m"
 sleep 1
 /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..1\e[0m"
 sleep 1
-/bin/echo -e '\n\n' "\e[1;31mREBOOTING NOW......\e[0m"
+/bin/echo -e '\n\n' "\e[1;31mREBOOTING NOW......
+
+\e[0m"
 reboot
 
 }

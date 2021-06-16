@@ -19,6 +19,10 @@ echo "
 "
 read -p "Enter Drive Name (eg: sda,vda,nvme0) : " DRIVE
 cfdisk /dev/$DRIVE
+clear
+echo "
+
+"
 lsblk /dev/$DRIVE 
 echo "
 

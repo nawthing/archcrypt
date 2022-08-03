@@ -1,23 +1,17 @@
 #!/bin/bash
 
 clear
-/bin/echo -e '\n\n' "\e[1;36mRUNNING IN CHROOT ENVIRONMENT...
-
-\e[0m"
+/bin/echo -e '\n\n' "\e[1;36mRUNNING IN CHROOT ENVIRONMENT...\e[0m"
+echo -e '\n'
 read -p "Enter Hostname : " HOSTNAME 
-echo "
-
-"
+echo -e '\n'
 read -p "Enter Username: " USERNAME
-echo "
-
-"
+echo -e '\n'
 read -p "Swapfile size (eg: 2,4,8) : " SWPFILE
 
 
-/bin/echo -e '\n\n' "\e[1;32mCREATING SWAPFILE...
-
-\e[0m"
+/bin/echo -e '\n\n' "\e[1;32mCREATING SWAPFILE...\e[0m"
+echo -e '\n'
 dd if=/dev/zero of=/swapfile bs=1G count=${SWPFILE} status=progress
 chmod 600 /swapfile
 mkswap /swapfile
@@ -30,9 +24,8 @@ echo en_US ISO-8859-1 >> /etc/locale.gen
 locale-gen
 echo LANG=en_US.UTF-8 >> /etc/locale.conf 
 echo $HOSTNAME >> /etc/hostname
-/bin/echo -e '\n\n' "\e[1;33mEnter root password
-
-\e[0m"
+/bin/echo -e '\n\n' "\e[1;33mEnter root password...\e[0m"
+echo -e '\n'
 passwd 
 pacman -Sy grub efibootmgr networkmanager terminus-font zsh zsh-syntax-highlighting zsh-autosuggestions --needed --noconfirm
 echo "FONT=ter-g18b" >> /etc/vconsole.conf
@@ -43,12 +36,9 @@ grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg 
 
 
-clear && /bin/echo -e '\n\n' "\e[1;32mRE-ENTER THE FOLLOWING PARTITION FOR CHROOT ENVIRONMENT!...
-\e[0m"
+clear && /bin/echo -e '\n\n' "\e[1;32mRE-ENTER THE FOLLOWING PARTITION FOR CHROOT ENVIRONMENT!...\e[0m"
 lsblk
-echo "
-
-"
+echo -e '\n'
 read -p "RE-Enter Encrypted partition (eg: sda2,vda2,nvme02) : " ECRVLM
 LUKS_UUID=$(blkid -o value -s UUID /dev/$ECRVLM)
 echo $LUKS_UUID
@@ -56,9 +46,8 @@ sed -i 's|GRUB_CMDLINE_LINUX=""|GRUB_CMDLINE_LINUX="cryptdevice=UUID='$LUKS_UUID
 grub-mkconfig -o /boot/grub/grub.cfg 
 systemctl enable NetworkManager 
 useradd -mG wheel -s /bin/zsh $USERNAME
-/bin/echo -e '\n\n' "\e[1;33mEnter user password
-
-\e[0m"
+/bin/echo -e '\n\n' "\e[1;33mEnter user password...\e[0m"
+echo -e '\n'
 passwd $USERNAME
 echo "root ALL=(ALL) ALL 
 %wheel ALL=(ALL) ALL 

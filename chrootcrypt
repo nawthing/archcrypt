@@ -14,7 +14,7 @@ read -p "Swapfile size (eg: 2,4,8) : " SWPFILE
 echo -e '\n'
 dd if=/dev/zero of=/swapfile bs=1G count=${SWPFILE} status=progress
 chmod 600 /swapfile
-mkswap /swapfile
+mkswap -U clear /swapfile
 swapon /swapfile
 echo  "/swapfile	none	swap	defaults	0 0" >> /etc/fstab
 

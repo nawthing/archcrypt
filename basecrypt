@@ -1,102 +1,94 @@
 #!/bin/bash
 
+# Function to gather partition information
 PART_INT() {
-ping -c 1 nsa.gov
-/bin/echo -e '\n\n' "\e[1;36mSTARTING SCRIPT...\e[0m"
-sleep 2
-clear
-/bin/echo -e '\n\n' "\e[1;36mENTER THE FOLLOWING PARAMETERS...\e[0m"
-echo -e '\n'                                        
-read -p "Enter Drive Encryption password : " ENCRPYTION_PASS
-echo -e '\n'                                        
-lsblk
-echo -e '\n'                                        
-read -p "Enter Drive Name (eg: sda,vda,nvme0) : " DRIVE
-cfdisk /dev/$DRIVE
-clear
-echo -e '\n'                                        
-lsblk /dev/$DRIVE 
-echo -e '\n'                                        
-read -p "EFI partition (eg: sda1,vda1,nvme01) : " DISK_EFI
-echo -e '\n'                                        
-read -p "Root partition (eg: sda2,vda2,nvme02) : " DISK_ROOT
+    # Display initial messages and gather necessary partition information
+    ping -c 1 archlinux.org
+    /bin/echo -e '\n\n' "\e[1;36mSTARTING SCRIPT...\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n\e[1;36mSETTING FONT...\e[0m'
+    setfont ter-132b
+    clear
+    /bin/echo -e '\n\n' "\e[1;36mENTER THE FOLLOWING PARAMETERS...\e[0m"
+    echo -e '\n'
+    # Encryption setup
+    read -p "Enter Drive Encryption password : " ENCRYPTION_PASS
+    echo -e '\n'
+    lsblk
+    echo -e '\n'
+    read -p "Enter Drive Name (eg: sda,vda,nvme0) : " DRIVE
+    cfdisk /dev/$DRIVE
+    clear
+    echo -e '\n'
+    lsblk /dev/$DRIVE
+    echo -e '\n'
+    read -p "EFI partition (eg: sda1,vda1,nvme01) : " DISK_EFI
+    echo -e '\n'
+    read -p "Root partition (eg: sda2,vda2,nvme02) : " DISK_ROOT
 }
 
-ENC_MAIN(){
-clear && /bin/echo -e '\n\n' "\e[1;32mEncrypting Drive...\e[0m"
-sleep 1
-/bin/echo -e '\n\n' "\e[1;32mRewriting the drive with random data\e[0m"
-sleep 1
-/bin/echo -e '\n\n' "\e[1;32mIgnore the errors, Do not panic if it looks stuck!...\e[0m"
-echo -e '\n'                                        
-echo -n "$ENCRPYTION_PASS" | cryptsetup -y -v luksFormat /dev/$DISK_ROOT
-echo -n "$ENCRPYTION_PASS" | cryptsetup open /dev/$DISK_ROOT cryptroot 
-mkfs.fat -F32 /dev/$DISK_EFI
-mkfs.ext4 /dev/mapper/cryptroot
-mount /dev/mapper/cryptroot /mnt
-mkdir /mnt/boot
-mount /dev/$DISK_EFI /mnt/boot
+# Function to format drives
+ENC_MAIN() {
+    clear && /bin/echo -e '\n\n' "\e[1;32mEncrypting Drive...\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n' "\e[1;32mRewriting the drive with random data\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n' "\e[1;32mIgnore the errors & logs, Do not panic if it looks stuck!...\e[0m"
+    echo -e '\n'
+    echo -n "$ENCRYPTION_PASS" | cryptsetup -y -v luksFormat /dev/$DISK_ROOT
+    echo -n "$ENCRYPTION_PASS" | cryptsetup open /dev/$DISK_ROOT cryptroot 
+    mkfs.fat -F32 /dev/$DISK_EFI
+    mkfs.ext4 /dev/mapper/cryptroot
+    mount /dev/mapper/cryptroot /mnt
+    mkdir /mnt/boot
+    mount /dev/$DISK_EFI /mnt/boot
 }
 
-SYS_GRD(){
-model=$(lscpu | grep 'Model name')
+# Function to set up system configurations
+SYS_GRD() {
+    model=$(lscpu | grep 'Model name')
 
-case "$model" in
-    *Intel*) CPUUCODE="intel-ucode" ;;
-    *AMD*) CPUUCODE="amd-ucode";;	
-esac
+    case "$model" in
+        *Intel*) CPUUCODE="intel-ucode" ;;
+        *AMD*) CPUUCODE="amd-ucode";;
+    esac
 
-echo -e '\n'                                        
-printf "$CPUUCODE"
-echo -e '\n'                                        
-/bin/echo -e '\n\n' "\e[1;36mUPDATING KEYRING...\e[0m"
-pacman -Sy archlinux-keyring --noconfirm
-pacstrap /mnt base base-devel linux linux-firmware vim git $CPUUCODE
-genfstab -U /mnt >> /mnt/etc/fstab 
+    echo -e '\n'
+    printf "$CPUUCODE"
+    echo -e '\n'
+    /bin/echo -e '\n\n' "\e[1;36mUPDATING KEYRING...\e[0m"
+    pacman -Sy archlinux-keyring --noconfirm
+    pacstrap /mnt base base-devel linux linux-firmware vim git $CPUUCODE
+    genfstab -U /mnt >> /mnt/etc/fstab 
 }
 
-
-CHR_CRY(){
-cp chrootcrypt /mnt/chrootcrypt 
-chmod +x /mnt/chrootcrypt 
-arch-chroot /mnt bash chrootcrypt && rm /mnt/chrootcrypt
+# Function to execute operations within the chroot environment
+CHR_CRY() {
+    cp chrootcrypt /mnt/chrootcrypt 
+    chmod +x /mnt/chrootcrypt 
+    arch-chroot /mnt bash chrootcrypt && rm /mnt/chrootcrypt
 }
 
-
-CLOSG(){
-umount -R /mnt
-clear 
-/bin/echo -e '\n\n' "\e[1;32mINSTALLATION COMPLETED!...\e[0m"
-sleep 1
-/bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..3\e[0m"
-sleep 1
-/bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..2\e[0m"
-sleep 1
-/bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..1\e[0m"
-sleep 1
-/bin/echo -e '\n\n' "\e[1;31mREBOOTING NOW......\e[0m"
-echo -e '\n'                                        
-reboot
-
+# Function to close and finalize installation
+CLOSG() {
+    umount -R /mnt
+    clear 
+    /bin/echo -e '\n\n' "\e[1;32mINSTALLATION COMPLETED!...\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..3\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..2\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n' "\e[1;32mREBOOTING IN ..1\e[0m"
+    sleep 1
+    /bin/echo -e '\n\n' "\e[1;31mREBOOTING NOW......\e[0m"
+    echo -e '\n'
+    reboot
 }
 
-
-
-
-#starting point
+# Starting point
 PART_INT
 ENC_MAIN
 SYS_GRD
 CHR_CRY
 CLOSG
-
-
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Function to gather partition information
+curl https://raw.githubusercontent.com/nawthing/archcrypt/main/chrootcrypt > chrootcrypt
 PART_INT() {
     # Display initial messages and gather necessary partition information
     ping -c 1 archlinux.org

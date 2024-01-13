@@ -9,6 +9,32 @@ echo -e '\n'
 read -p "Enter Username: " USERNAME
 echo -e '\n'
 read -p "Swapfile size (eg: 2, 4, 8): " SWAPFILE
+clear
+
+# Display timezone options and read input
+printf '
+Africa/Abidjan 
+Africa/Casablanca
+America/Adak 
+America/Los_Angeles 
+Antarctica/Casey  
+Antarctica/Vostok
+Asia/Kolkata 
+Asia/Tokyo 
+Atlantic/Bermuda 
+Atlantic/Reykjavik
+Australia/Lord_Howe 
+Australia/Melbourne
+Europe/Amsterdam 
+Europe/Istanbul
+Indian/Kerguelen
+Indian/Reunion
+Pacific/Chuuk 
+Pacific/Wake
+UTC
+'
+read -p "Enter Timezone: " TIMEZONE 
+
 
 # Creating and configuring swapfile
 /bin/echo -e '\n\n' "\e[1;32mCREATING SWAPFILE...\e[0m"
@@ -20,7 +46,7 @@ swapon /swapfile
 echo "/swapfile	none	swap	defaults	0 0" >> /etc/fstab
 
 # Configuring system settings
-ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
+ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
 echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
 echo en_US ISO-8859-1 >> /etc/locale.gen
 locale-gen
@@ -58,4 +84,5 @@ passwd $USERNAME
 echo "root ALL=(ALL) ALL 
 %wheel ALL=(ALL) ALL 
 @includedir /etc/sudoers.d" > /etc/sudoers
+sleep 1
 exit

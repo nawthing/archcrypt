@@ -46,7 +46,7 @@ echo -e '\n'
 read -p "RE-Enter Encrypted partition (eg: sda2, vda2, nvme02): " ECRYPTED_VOLUME
 LUKS_UUID=$(blkid -o value -s UUID /dev/$ECRYPTED_VOLUME)
 echo $LUKS_UUID
-sed -i "/^GRUB_CMDLINE_LINUX=/ s/\"\$/cryptdevice=UUID=${LUKS_UUID}:cryptroot root=\/dev\/mapper\/cryptroot\"/" output
+sed -i "/^GRUB_CMDLINE_LINUX=/ s/\"\$/cryptdevice=UUID=${LUKS_UUID}:cryptroot root=\/dev\/mapper\/cryptroot\"/" /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg 
 systemctl enable NetworkManager 
 

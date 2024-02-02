@@ -61,7 +61,7 @@ sed -i 's/#ParallelDownloads = 5/ParallelDownloads = 5/' /etc/pacman.conf
 pacman -Sy grub efibootmgr networkmanager terminus-font zsh zsh-syntax-highlighting zsh-autosuggestions --needed --noconfirm
 echo "FONT=ter-g18b" >> /etc/vconsole.conf
 echo "FONT_MAP=8859-2" >> /etc/vconsole.conf
-sudo sed -i 's/\(^HOOKS=.*\)filesystems\(.*$\)/\1encrypt filesystems\2/' /etc/mkinitcpio.conf
+sed -i 's/\(^HOOKS=.*\)filesystems\(.*$\)/\1encrypt filesystems\2/' /etc/mkinitcpio.conf
 mkinitcpio -p linux-lts
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB 
 grub-mkconfig -o /boot/grub/grub.cfg 
